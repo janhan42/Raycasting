@@ -1,4 +1,4 @@
-NAME			=		Rayacsting
+NAME			=		Raycasting
 CXX				=		c++
 CXXFLAGS		=		-I./SFML/include -std=c++11
 LDFLAGS			=		-L./SFML/lib -lsfml-window -lsfml-graphics -lsfml-system -Wl,-rpath,./SFML/lib
