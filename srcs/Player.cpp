@@ -139,8 +139,8 @@ bool Player::checkLineIntersection(const sf::Vector2f& p1, const sf::Vector2f& p
 
 void	Player::castRays(std::vector<Wall>& walls, sf::RenderWindow& window)
 {
-	const float rayCount = 1440.0f; // 레이의 수
-	const float totalAngle = 35.0f * (M_PI / 180.0f); // 전체 각도
+	const float rayCount = 5000.0f; // 레이의 수
+	const float totalAngle = 360.0f * (M_PI / 180.0f); // 전체 각도
 	const float angleStep = totalAngle / rayCount; // 각 레이 사이의 각도
 	float currentAngle = direction - angleStep * (rayCount / 2); // 시작 각도
 	for (int i = 0; i < rayCount; i++) {
