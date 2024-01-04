@@ -22,8 +22,10 @@ Ray::Ray(sf::Vector2f direction)
 // Reset end-point of Ray
 void Ray::reset(sf::Vector2f playerPosition, float playerDirection) {
 	// 레이의 방향을 플레이어의 방향으로 설정
-	sf::Vector2f rayDirection = sf::Vector2f(cos(playerDirection), sin(playerDirection));
+	while (playerDirection < 0) playerDirection += 2 * M_PI;
+	while (playerDirection >= 2 * M_PI) playerDirection -= 2 * M_PI;
 	// 레이의 끝점을 플레이어의 위치에서 시작하여 레이의 방향으로 설정
+	   sf::Vector2f rayDirection = sf::Vector2f(cos(playerDirection), sin(playerDirection));
 	m_end = playerPosition + rayDirection * 3000.0f;
 	Player_pos = playerPosition;
 }

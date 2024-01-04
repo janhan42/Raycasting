@@ -28,6 +28,7 @@ Player::Player(sf::Vector2f pos, float dir)
 	body.setPosition(pos);
 	body.setOrigin(body.getRadius(), body.getRadius());
 	body.setFillColor(sf::Color::White);
+	setDirection(dir);
 }
 
 void	Player::setPostion(sf::Vector2f pos)
@@ -50,29 +51,45 @@ float	Player::getDirection()
 	return this->direction;
 }
 
-void Player::handleInput(const std::vector<Wall>& walls, sf::Event& event, sf::RenderWindow& window) {
-	const float moveSpeed = 5.0f;
-	const float rotationSpeed = 0.01f;
-
+void Player::handelMouse(const std::vector<Wall>& walls, sf::Event& event, sf::RenderWindow& window)
+{
 	sf::Vector2f movement(0.0f, 0.0f);
 	std::cout << "direction : "<< direction << std::endl;
 	if (event.type == sf::Event::MouseMoved) {
-        sf::Vector2i mousePosition = sf::Mouse::getPosition(window);
-        sf::Vector2f newPosition(mousePosition.x, mousePosition.y);
-        body.setPosition(newPosition); // 플레이어의 setPosition 함수를 호출하여 위치 업데이트
-    }
+		sf::Vector2i mousePosition = sf::Mouse::getPosition(window);
+		sf::Vector2f newPosition(mousePosition.x, mousePosition.y);
+		body.setPosition(newPosition); // 플레이어의 setPosition 함수를 호출하여 위치 업데이트
+	}
+
+	sf::Vector2f oldPosition = body.getPosition();
+	sf::Vector2f newPosition = oldPosition + movement;
+	if (!isCollidingWithWall(newPosition, walls)) {
+		oldPosition = newPosition;
+		body.setPosition(oldPosition);
+		body.setOrigin(body.getRadius(), body.getRadius());
+	}
+	body.setPosition(oldPosition);
+}
+
+void Player::handleInput(const std::vector<Wall>& walls, sf::Event& event, sf::RenderWindow& window)
+{
+	const float moveSpeed = 5.0f;
+	const float rotationSpeed = 0.01f;
 
 	const float maxRotationSpeed = 30.f; // 최대 회전 속도
-	float currentRotationSpeed = 0.0f;    // 현재 회전 속도
-	float rotationAcceleration = 1.0f;
-	float rotationDeceleration = 1.0f;
-
-	if (event.key.code == sf::Keyboard::A) {
+	float currentRotationSpeed = 0.0f;	// 현재 회전 속도
+	float rotationAcceleration = 0.025f;
+	float rotationDeceleration = 0.2f;
+	std::cout << "isRotatingLeft : "<< isRotatingLeft << std::endl;
+	std::cout << "isRotatingRight : "<< isRotatingRight << std::endl;
+	if (isRotatingLeft && !isRotatingRight) {
+		std::cout << "Key : A"<< std::endl;
 		currentRotationSpeed -= rotationAcceleration; // 회전 가속
 		if (currentRotationSpeed < -maxRotationSpeed) {
 			currentRotationSpeed = -maxRotationSpeed;
 		}
-	} else if (event.key.code == sf::Keyboard::D) {
+	} else if (isRotatingRight && !isRotatingLeft) {
+		std::cout << "Key : D"<< std::endl;
 		currentRotationSpeed += rotationAcceleration; // 회전 가속
 		if (currentRotationSpeed > maxRotationSpeed) {
 			currentRotationSpeed = maxRotationSpeed;
@@ -88,16 +105,10 @@ void Player::handleInput(const std::vector<Wall>& walls, sf::Event& event, sf::R
 		}
 	}
 
-	sf::Vector2f oldPosition = body.getPosition();
-	sf::Vector2f newPosition = oldPosition + movement;
-	if (!isCollidingWithWall(newPosition, walls)) {
-		oldPosition = newPosition;
-		body.setPosition(oldPosition);
-		body.setOrigin(body.getRadius(), body.getRadius());
-	}
-	body.setPosition(oldPosition);
-	fmod(direction, 720.0f);
-	body.setRotation(direction);
+	direction += currentRotationSpeed;
+	while (direction < 0) direction += 2 * M_PI;
+	while (direction >= 2 * M_PI) direction -= 2 * M_PI;
+	body.setRotation(direction * (180.0f / M_PI));
 }
 
 bool Player::isCollidingWithWall(const sf::Vector2f& newPosition, const std::vector<Wall>& walls) {
@@ -129,7 +140,7 @@ bool Player::checkLineIntersection(const sf::Vector2f& p1, const sf::Vector2f& p
 void	Player::castRays(std::vector<Wall>& walls, sf::RenderWindow& window)
 {
 	const float rayCount = 1440.0f; // 레이의 수
-	const float totalAngle = 1440.0f * (M_PI / 180.0f); // 전체 각도
+	const float totalAngle = 35.0f * (M_PI / 180.0f); // 전체 각도
 	const float angleStep = totalAngle / rayCount; // 각 레이 사이의 각도
 	float currentAngle = direction - angleStep * (rayCount / 2); // 시작 각도
 	for (int i = 0; i < rayCount; i++) {
@@ -148,7 +159,7 @@ void	Player::castRays(std::vector<Wall>& walls, sf::RenderWindow& window)
 void Player::drawRay(sf::RenderWindow& window, sf::Vector2f start, sf::Vector2f end) {
     sf::Vector2f direction = end - start;
     sf::Vector2f perpendicular(-direction.y, direction.x);
-    float thickness = 1.0f;  // 레이의 두께
+    float thickness = 4.0f;  // 레이의 두께
     perpendicular = perpendicular / std::sqrt(perpendicular.x * perpendicular.x + perpendicular.y * perpendicular.y) * thickness;
 
     sf::Vertex quad[] = {

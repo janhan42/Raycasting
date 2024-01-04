@@ -22,3 +22,5 @@
 # define SCRENN_W 1980
 # define SCRENN_H 1020
 extern sf::Vector2f g_mouse_pos;
+extern bool isRotatingLeft;
+extern bool isRotatingRight;

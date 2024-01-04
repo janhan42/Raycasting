@@ -13,6 +13,7 @@
 #include "Raycasting.hpp"
 #include "SFML/Graphics/CircleShape.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
+#include "SFML/System/Clock.hpp"
 
 class Player
 {
@@ -26,7 +27,9 @@ class Player
 		void			handleInput(const std::vector<Wall>& walls, sf::Event& event, sf::RenderWindow& window);
 		void			draw(sf::RenderWindow& window);
 		bool			isCollidingWithWall(const sf::Vector2f& newPosition, const std::vector<Wall>& walls);
-
+		void 			handelMouse(const std::vector<Wall>& walls, sf::Event& event, sf::RenderWindow& window);
+		// sf::Clock clock;
+		// float lastFrameTime = 0.0f;
 	private:
 		sf::CircleShape	body;
 		sf::Vector2f	position;

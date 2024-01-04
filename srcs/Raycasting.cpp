@@ -13,6 +13,7 @@
 #include "Player.hpp"
 #include "SFML/System/Vector2.hpp"
 #include "SFML/Window/Event.hpp"
+#include "SFML/Window/Joystick.hpp"
 #include "SFML/Window/Keyboard.hpp"
 #include "SFML/Window/Mouse.hpp"
 #include "Wall.hpp"
@@ -22,6 +23,9 @@
 sf::Vector2f startPosition;
 bool isDrawing = false;
 bool isEdit = false;
+bool isKey = false;
+bool isRotatingLeft = false;
+bool isRotatingRight = false;
 Wall* currentSegment = nullptr;
 sf::Vector2f g_mouse_pos;
 
@@ -123,7 +127,7 @@ int main(void)
 	window.setFramerateLimit(60);
 	std::vector<Wall> walls;
 	// setupWalls(walls, window.getSize().x, window.getSize().y, 15);
-	Player player(sf::Vector2f(500, 500), 15);
+	Player player(sf::Vector2f(500, 500), 0);
 	sf::Text text;
 	sf::Font font;
 	font.loadFromFile("arial.ttf");
@@ -145,10 +149,10 @@ int main(void)
 				window.setView(sf::View(visibleArea));
 			}
 
-			if (!isEdit)
-			{
+			if (!isEdit) {
 				if (event.type == sf::Event::MouseButtonPressed) {
 					PressEvent(event, walls, currentSegment, isDrawing);
+
 				}
 				if (event.type == sf::Event::MouseButtonReleased) {
 					RelesasedEvent(event, walls, currentSegment, isDrawing);
@@ -156,34 +160,40 @@ int main(void)
 			}
 			if (event.type == sf::Event::MouseMoved) {
 				MoveEvent(event, walls, currentSegment, isDrawing);
-				player.handleInput(walls, event, window);
+				player.handelMouse(walls, event, window);
 			}
 			if (event.type == sf::Event::KeyPressed){
 				if (event.key.code == sf::Keyboard::R) {
 					isEdit = !isEdit;
 				}
-				else {
-					player.handleInput(walls, event, window);
-				}
+				else if (event.key.code == sf::Keyboard::A)
+					isRotatingLeft = !isRotatingLeft;
+				else if (event.key.code == sf::Keyboard::D)
+					isRotatingRight = !isRotatingRight;
 			}
-
-		}
-		window.clear();
-		if (!isEdit)
-		{
-			for (auto& wall : walls)
+			else if (event.type == sf::Event::KeyReleased)
 			{
+				isRotatingLeft = false;
+				isRotatingRight = false;
+			}
+			if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::R){
+				isKey = !isKey;
+			}
+		}
+		// 입력 처리
+		player.handleInput(walls, event, window);
+		// 게임 상태 업데이트 및 렌더링
+		window.clear();
+		if (!isEdit) {
+			for (auto& wall : walls) {
 				wall.draw(window);
 			}
-			if (isDrawing && currentSegment)
-			{
+			if (isDrawing && currentSegment) {
 				currentSegment->draw(window);
 			}
 			text.setString("Edit Mode"); // 텍스트 내용 설정
 			text.setFillColor(sf::Color::Red); // 텍스트 색상을 빨간색으로 설정
-		}
-		else
-		{
+		} else {
 			player.castRays(walls, window);
 			player.draw(window);
 			text.setString("Play Mode"); // 텍스트 내용 설정
