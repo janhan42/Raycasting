@@ -12,7 +12,7 @@
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "Raycasting.hpp"
 
-Wall::Wall() : thickness(4)
+Wall::Wall() : thickness(8)
 {
 
 }

@@ -145,24 +145,24 @@ void	Rectangle::castRays(std::vector<Wall>& walls, sf::RenderWindow& window)
 {
 	sf::Vector2i mousePos = sf::Mouse::getPosition(window);
 	sf::Vector2f mouseWorldPos = window.mapPixelToCoords(mousePos); // 스크린 좌표를 월드 좌표로 변환
-
+	float rayLength = 500; // Ray 의 길이
 	// 마우스 위치를 향한 방향 벡터 계산
 	sf::Vector2f mouseDirection = mouseWorldPos - body.getPosition();
 	float length = std::sqrt(mouseDirection.x * mouseDirection.x + mouseDirection.y * mouseDirection.y);
 	direction = std::atan2(mouseDirection.y, mouseDirection.x); // 각도를 라디안으로 계산
-	const float rayCount = 2500.0f; // 레이의 수
-	const float totalAngle = 35.0f * (M_PI / 180.0f); // 전체 각도
+	const float rayCount = 5000.0f; // 레이의 수
+	const float totalAngle = 40.0f * (M_PI / 180.0f); // 전체 각도
 	const float angleStep = totalAngle / rayCount; // 각 레이 사이의 각도
 	float currentAngle = direction - angleStep * (rayCount / 2); // 시작 각도
 	for (int i = 0; i < rayCount; i++) {
 		sf::Vector2f radDir(cos(currentAngle), sin(currentAngle));
 		Ray ray(mouseDirection /= length); // 레이 생성
-		ray.reset(body.getPosition(), currentAngle); // 레이의 끝점 초기화
+		ray.reset(body.getPosition(), currentAngle, rayLength); // 레이의 끝점 초기화
 		for (const auto& wall : walls) {
 			ray.calc_hit(wall.getStart(), wall.getEnd()); // 각 벽에 대한 교차점 계산
 		}
 		drawRay(window, body.getPosition(), ray.getEnd()); // 레이 그리기
-		ray.drawRayEnd(window, ray);
+		ray.drawRayEnd(window, ray, body.getPosition(), currentAngle, rayLength);
 		currentAngle += angleStep;
 	}
 }

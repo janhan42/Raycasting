@@ -10,6 +10,7 @@
  */
 
 #include "Raycasting.hpp"
+#include <iostream>
 
 Ray::Ray(sf::Vector2f direction)
 {
@@ -19,13 +20,13 @@ Ray::Ray(sf::Vector2f direction)
 }
 
 // Reset end-point of Ray
-void Ray::reset(sf::Vector2f playerPosition, float playerDirection) {
+void Ray::reset(sf::Vector2f playerPosition, float playerDirection, float length) {
 	// 레이의 방향을 플레이어의 방향으로 설정
 	while (playerDirection < 0) playerDirection += 2 * M_PI;
 	while (playerDirection >= 2 * M_PI) playerDirection -= 2 * M_PI;
 	// 레이의 끝점을 플레이어의 위치에서 시작하여 레이의 방향으로 설정
 	sf::Vector2f rayDirection = sf::Vector2f(cos(playerDirection), sin(playerDirection));
-	m_end = playerPosition + rayDirection * 3000.0f;
+	m_end = playerPosition + rayDirection * length;
 	Player_pos = playerPosition;
 }
 
@@ -69,10 +70,18 @@ const sf::Vector2f& Ray::getEndPoint() const
 	return m_end;
 }
 
-void Ray::drawRayEnd(sf::RenderWindow& window, const Ray& ray) {
-	sf::CircleShape circle(2); // 반지름
-	circle.setPosition(ray.getEndPoint());
-	circle.setOrigin(circle.getRadius(), circle.getRadius());
-	circle.setFillColor(sf::Color::White); // 색상 설정
-	window.draw(circle);
+void Ray::drawRayEnd(sf::RenderWindow& window, const Ray& ray, sf::Vector2f playerPosition, float playerDirection, float length) {
+	sf::Vector2f rayDirection = sf::Vector2f(cos(playerDirection), sin(playerDirection));
+	sf::Vector2f endPoint = playerPosition + rayDirection * length;
+
+	// Ray의 실제 길이 계산
+	float actualLength = std::sqrt(std::pow(ray.getEndPoint().x - playerPosition.x, 2) + std::pow(ray.getEndPoint().y - playerPosition.y, 2));
+	// 설정한 length와 다를 경우에만 원을 그림
+	if (std::abs(actualLength - length) > 0.1) { //오차 범위
+		sf::CircleShape circle(2); // 반지름
+		circle.setPosition(ray.getEndPoint());
+		circle.setOrigin(circle.getRadius(), circle.getRadius());
+		circle.setFillColor(sf::Color::White); // 색상 설정
+		window.draw(circle);
+	}
 }

@@ -148,7 +148,7 @@ int main(void)
 				RelesasedEvent(event, walls, currentSegment, isDrawing);
 			}
 		}
-		window.clear();
+		window.clear(sf::Color(20, 20, 20));
 		if (!isEdit)
 		{
 			for (auto& wall : walls)
@@ -163,10 +163,10 @@ int main(void)
 		} else {
 			Player1.update(window.getSize().x, window.getSize().y, 0.5f, Player1KeyInPut, walls, window);
 			Player1.castRays(walls, window);
-			Player1.draw(window);
 			text.setString("Play Mode \n[W]:UP\n[S]:DOWN\n[A]:LEFT\n[D]:RIGHT"); // 텍스트 내용 설정
 			text.setFillColor(sf::Color::Green); // 텍스트 색상을 초록색으로 설정
 		}
+		Player1.draw(window);
 		window.draw(text);
 		window.display();
 	}

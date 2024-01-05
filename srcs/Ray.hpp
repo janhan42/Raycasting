@@ -22,10 +22,10 @@ public:
 	Ray() {};
 	Ray(sf::Vector2f direction);
 	void calc_hit(Vector2f wall1, Vector2f wall2);
-	void reset(sf::Vector2f playerPosition, float playerDirection);
+	void reset(sf::Vector2f playerPosition, float playerDirection, float length);
 	const sf::Vector2f& getEnd() const;
 	sf::Vector2f endPoint;
-	void drawRayEnd(sf::RenderWindow& window, const Ray& ray);
+	void drawRayEnd(sf::RenderWindow& window, const Ray& ray, sf::Vector2f playerPosition, float playerDirection, float length);
 	const sf::Vector2f& getEndPoint() const;
 private:
 	void	setEndPoint(const sf::Vector2f& point);
