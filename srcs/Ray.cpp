@@ -9,7 +9,6 @@
  *
  */
 
-#include "Ray.hpp"
 #include "Raycasting.hpp"
 
 Ray::Ray(sf::Vector2f direction)
@@ -25,7 +24,7 @@ void Ray::reset(sf::Vector2f playerPosition, float playerDirection) {
 	while (playerDirection < 0) playerDirection += 2 * M_PI;
 	while (playerDirection >= 2 * M_PI) playerDirection -= 2 * M_PI;
 	// 레이의 끝점을 플레이어의 위치에서 시작하여 레이의 방향으로 설정
-	   sf::Vector2f rayDirection = sf::Vector2f(cos(playerDirection), sin(playerDirection));
+	sf::Vector2f rayDirection = sf::Vector2f(cos(playerDirection), sin(playerDirection));
 	m_end = playerPosition + rayDirection * 3000.0f;
 	Player_pos = playerPosition;
 }
@@ -71,7 +70,7 @@ const sf::Vector2f& Ray::getEndPoint() const
 }
 
 void Ray::drawRayEnd(sf::RenderWindow& window, const Ray& ray) {
-	sf::CircleShape circle(6); // 반지름이 4인 원
+	sf::CircleShape circle(2); // 반지름
 	circle.setPosition(ray.getEndPoint());
 	circle.setOrigin(circle.getRadius(), circle.getRadius());
 	circle.setFillColor(sf::Color::White); // 색상 설정

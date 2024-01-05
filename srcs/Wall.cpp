@@ -12,7 +12,7 @@
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "Raycasting.hpp"
 
-Wall::Wall() : thickness(10)
+Wall::Wall() : thickness(4)
 {
 
 }
@@ -50,10 +50,10 @@ void	Wall::draw(sf::RenderWindow& window)
 	perpendicular *= thickness / 4;
 
 	sf::Vertex rectangle[] = {
-	    sf::Vertex(start - perpendicular, sf::Color::Red),
-	    sf::Vertex(end - perpendicular, sf::Color::Red),
-	    sf::Vertex(end + perpendicular, sf::Color::Red),
-	    sf::Vertex(start + perpendicular, sf::Color::Red)
+		sf::Vertex(start - perpendicular, sf::Color::Red),
+		sf::Vertex(end - perpendicular, sf::Color::Red),
+		sf::Vertex(end + perpendicular, sf::Color::Red),
+		sf::Vertex(start + perpendicular, sf::Color::Red)
 	};
 	window.draw(rectangle, 4, sf::Quads);
 }

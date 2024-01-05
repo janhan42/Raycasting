@@ -1,35 +1,91 @@
-/**
- * @file Raycasting.cpp
- * @author jang hun han (wkdgns720@naver.com)
- * @brief
- * @version 0.1
- * @date 2024-01-04
- *
- * @copyright Copyright (c) 2024
- *
- */
-
 #include "Raycasting.hpp"
-#include "Player.hpp"
 #include "SFML/System/Vector2.hpp"
 #include "SFML/Window/Event.hpp"
-#include "SFML/Window/Joystick.hpp"
 #include "SFML/Window/Keyboard.hpp"
-#include "SFML/Window/Mouse.hpp"
 #include "Wall.hpp"
-#include <sys/errno.h>
+#include <iostream>
 #include <vector>
-
+// 인풋 컨트롤
 sf::Vector2f startPosition;
+sf::Vector2f g_mouse_pos;
+Wall* currentSegment = nullptr;
+bool Player1KeyInPut[4] = {false, false, false, false};
 bool isDrawing = false;
 bool isEdit = false;
-bool isKey = false;
-bool isRotatingLeft = false;
-bool isRotatingRight = false;
-Wall* currentSegment = nullptr;
-sf::Vector2f g_mouse_pos;
 
+void	Player1InPutHandle(sf::Event event)
+{
+	if (event.type == sf::Event::KeyPressed){
+		if (event.key.code == sf::Keyboard::W && !Player1KeyInPut[0]){
+			Player1KeyInPut[0] = !Player1KeyInPut[0];
+		}
+		if (event.key.code == sf::Keyboard::S && !Player1KeyInPut[1]){
+			Player1KeyInPut[1] = !Player1KeyInPut[1];
+		}
+		if (event.key.code == sf::Keyboard::A && !Player1KeyInPut[2]){
+			Player1KeyInPut[2] = !Player1KeyInPut[2];
+		}
+		if (event.key.code == sf::Keyboard::D && !Player1KeyInPut[3]){
+			Player1KeyInPut[3] = !Player1KeyInPut[3];
+		}
+	}
+	if (event.type == sf::Event::KeyReleased){
+		if (event.key.code == sf::Keyboard::W){
+			Player1KeyInPut[0] = !Player1KeyInPut[0];
+		}
+		if (event.key.code == sf::Keyboard::S){
+			Player1KeyInPut[1] = !Player1KeyInPut[1];
+		}
+		if (event.key.code == sf::Keyboard::A){
+			Player1KeyInPut[2] = !Player1KeyInPut[2];
+		}
+		if (event.key.code == sf::Keyboard::D){
+			Player1KeyInPut[3] = !Player1KeyInPut[3];
+		}
+	}
+}
 
+void	PressEvent(sf::Event event, std::vector<Wall>& walls, Wall*& currentSegment, bool& isDrawing)
+{
+	if (event.mouseButton.button == sf::Mouse::Left && !isEdit) {
+		// 마우스 눌림 이벤트 처리
+		startPosition = sf::Vector2f(event.mouseButton.x, event.mouseButton.y);
+		isDrawing = true;
+		currentSegment = new Wall();
+		currentSegment->setStart(startPosition);
+		currentSegment->setEnd(startPosition);
+	}
+}
+
+void	MoveEvent(sf::Event event, std::vector<Wall>& walls, Wall*& currentSegment, bool& isDrawing)
+{
+	g_mouse_pos = sf::Vector2f(static_cast<float>(event.mouseMove.x), static_cast<float>(event.mouseMove.y));
+	if (isDrawing && currentSegment) {
+		// 마우스 이동 이벤트 처리
+		currentSegment->setEnd(sf::Vector2f(event.mouseMove.x, event.mouseMove.y));
+	}
+}
+
+void	RelesasedEvent(sf::Event event, std::vector<Wall>& walls, Wall*& currentSegment, bool& isDrawing)
+{
+	if (event.mouseButton.button == sf::Mouse::Left && isDrawing && !isEdit) {
+		// 마우스 뗌 이벤트 처리
+		isDrawing = false;
+		currentSegment->setEnd(sf::Vector2f(event.mouseButton.x, event.mouseButton.y));
+		walls.push_back(*currentSegment);
+		delete currentSegment; // 메모리 해제
+		currentSegment = nullptr;
+	}
+
+	if (event.mouseButton.button == sf::Mouse::Right && !isEdit) {
+		sf::Vector2f mousePos(event.mouseButton.x, event.mouseButton.y);
+		// 벽을 순회하면서 거리를 체크하여 삭제
+		walls.erase(std::remove_if(walls.begin(), walls.end(),
+			[&mousePos](const Wall& wall) {
+				return distanceFromPointToLineSegment(mousePos, wall.getStart(), wall.getEnd()) < 20.0f;
+			}), walls.end());
+	}
+}
 
 float distanceFromPointToLineSegment(sf::Vector2f point, sf::Vector2f lineStart, sf::Vector2f lineEnd) {
 	// 선분의 벡터
@@ -48,155 +104,67 @@ float distanceFromPointToLineSegment(sf::Vector2f point, sf::Vector2f lineStart,
 	return sqrt((point.x - projection.x) * (point.x - projection.x) + (point.y - projection.y) * (point.y - projection.y));
 }
 
-void	PressEvent(sf::Event event, std::vector<Wall>& walls, Wall*& currentSegment, bool& isDrawing)
-{
-	if (event.mouseButton.button == sf::Mouse::Left) {
-		// 마우스 눌림 이벤트 처리
-		startPosition = sf::Vector2f(event.mouseButton.x, event.mouseButton.y);
-		isDrawing = true;
-		currentSegment = new Wall();
-		currentSegment->setStart(startPosition);
-		currentSegment->setEnd(startPosition);
-	}
-}
-
-void	RelesasedEvent(sf::Event event, std::vector<Wall>& walls, Wall*& currentSegment, bool& isDrawing)
-{
-	if (event.mouseButton.button == sf::Mouse::Left && isDrawing) {
-		// 마우스 뗌 이벤트 처리
-		isDrawing = false;
-		currentSegment->setEnd(sf::Vector2f(event.mouseButton.x, event.mouseButton.y));
-		walls.push_back(*currentSegment);
-		delete currentSegment; // 메모리 해제
-		currentSegment = nullptr;
-	}
-
-	if (event.mouseButton.button == sf::Mouse::Right) {
-		sf::Vector2f mousePos(event.mouseButton.x, event.mouseButton.y);
-		// 벽을 순회하면서 거리를 체크하여 삭제
-		walls.erase(std::remove_if(walls.begin(), walls.end(),
-			[&mousePos](const Wall& wall) {
-				return distanceFromPointToLineSegment(mousePos, wall.getStart(), wall.getEnd()) < 20.0f;
-			}), walls.end());
-	}
-}
-
-void	MoveEvent(sf::Event event, std::vector<Wall>& walls, Wall*& currentSegment, bool& isDrawing)
-{
-	g_mouse_pos = sf::Vector2f(static_cast<float>(event.mouseMove.x), static_cast<float>(event.mouseMove.y));
-	if (isDrawing && currentSegment) {
-		// 마우스 이동 이벤트 처리
-		currentSegment->setEnd(sf::Vector2f(event.mouseMove.x, event.mouseMove.y));
-	}
-}
-
-void setupWalls(std::vector<Wall>& walls, int screenWidth, int screenHeight, int offset) {
-    // 화면의 네 귀퉁이에 대한 위치
-    sf::Vector2f topLeft(offset, offset);
-    sf::Vector2f topRight(screenWidth - offset, offset);
-    sf::Vector2f bottomLeft(offset, screenHeight - offset);
-    sf::Vector2f bottomRight(screenWidth - offset, screenHeight - offset);
-
-    // 벽 생성 및 위치 설정
-    Wall topWall;
-    topWall.setStart(topLeft);
-    topWall.setEnd(topRight);
-
-    Wall rightWall;
-    rightWall.setStart(topRight);
-    rightWall.setEnd(bottomRight);
-
-    Wall bottomWall;
-    bottomWall.setStart(bottomRight);
-    bottomWall.setEnd(bottomLeft);
-
-    Wall leftWall;
-    leftWall.setStart(bottomLeft);
-    leftWall.setEnd(topLeft);
-
-    // 벡터에 벽 추가
-    walls.push_back(topWall);
-    walls.push_back(rightWall);
-    walls.push_back(bottomWall);
-    walls.push_back(leftWall);
-}
-
 int main(void)
 {
-	sf::RenderWindow window(sf::VideoMode(SCRENN_W, SCRENN_H), "Raycasting");
+	sf::RenderWindow window(sf::VideoMode(SCREEN_W, SCREEN_H), "RectangleCollision");
 	window.setFramerateLimit(60);
+	// setting Object
+	Rectangle Player1(sf::Vector2f(10, 10), sf::Vector2f(250, 250), sf::Color::White);
 	std::vector<Wall> walls;
-	// setupWalls(walls, window.getSize().x, window.getSize().y, 15);
-	Player player(sf::Vector2f(500, 500), 0);
 	sf::Text text;
 	sf::Font font;
 	font.loadFromFile("arial.ttf");
 	text.setFont(font);
 	text.setCharacterSize(24); // 텍스트 크기 설정
 	text.setPosition(10, 10);
-
-	while (window.isOpen())
-	{
-		sf::Event event;
-		while (window.pollEvent(event))
-		{
+	// setting window
+	while (window.isOpen()){
+		sf::Event event; // traking event
+		while (window.pollEvent(event)){
+			// 윈도우 Closed 및 Resized 관리
 			if (event.type == sf::Event::Closed){
 				window.close();
-			}
-			else if (event.type == sf::Event::Resized)
-			{
+			} else if (event.type == sf::Event::Resized) {
 				sf::FloatRect visibleArea(0, 0, event.size.width, event.size.height);
 				window.setView(sf::View(visibleArea));
 			}
-
-			if (!isEdit) {
-				if (event.type == sf::Event::MouseButtonPressed) {
-					PressEvent(event, walls, currentSegment, isDrawing);
-
-				}
-				if (event.type == sf::Event::MouseButtonReleased) {
-					RelesasedEvent(event, walls, currentSegment, isDrawing);
-				}
-			}
-			if (event.type == sf::Event::MouseMoved) {
-				MoveEvent(event, walls, currentSegment, isDrawing);
-				player.handelMouse(walls, event, window);
-			}
+			// 키 입력 이벤트 관리
 			if (event.type == sf::Event::KeyPressed){
 				if (event.key.code == sf::Keyboard::R) {
 					isEdit = !isEdit;
 				}
-				else if (event.key.code == sf::Keyboard::A)
-					isRotatingLeft = !isRotatingLeft;
-				else if (event.key.code == sf::Keyboard::D)
-					isRotatingRight = !isRotatingRight;
+				Player1InPutHandle(event);
 			}
-			else if (event.type == sf::Event::KeyReleased)
-			{
-				isRotatingLeft = false;
-				isRotatingRight = false;
+			if (event.type == sf::Event::KeyReleased){
+				Player1InPutHandle(event);
 			}
-			if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::R){
-				isKey = !isKey;
+			if (event.type == sf::Event::MouseButtonPressed){
+				PressEvent(event, walls, currentSegment, isDrawing);
+			}
+			if (event.type == sf::Event::MouseMoved) {
+				MoveEvent(event, walls, currentSegment, isDrawing);
+			}
+			if (event.type == sf::Event::MouseButtonReleased){
+				RelesasedEvent(event, walls, currentSegment, isDrawing);
 			}
 		}
-		// 입력 처리
-		player.handleInput(walls, event, window);
-		// 게임 상태 업데이트 및 렌더링
 		window.clear();
-		if (!isEdit) {
-			for (auto& wall : walls) {
+		if (!isEdit)
+		{
+			for (auto& wall : walls)
+			{
 				wall.draw(window);
 			}
 			if (isDrawing && currentSegment) {
 				currentSegment->draw(window);
 			}
-			text.setString("Edit Mode"); // 텍스트 내용 설정
+			text.setString("Edit Mode\nLeft Button: Drawing\nRight Button: Delete"); // 텍스트 내용 설정
 			text.setFillColor(sf::Color::Red); // 텍스트 색상을 빨간색으로 설정
 		} else {
-			player.castRays(walls, window);
-			player.draw(window);
-			text.setString("Play Mode"); // 텍스트 내용 설정
+			Player1.update(window.getSize().x, window.getSize().y, 0.5f, Player1KeyInPut, walls, window);
+			Player1.castRays(walls, window);
+			Player1.draw(window);
+			text.setString("Play Mode \n[W]:UP\n[S]:DOWN\n[A]:LEFT\n[D]:RIGHT"); // 텍스트 내용 설정
 			text.setFillColor(sf::Color::Green); // 텍스트 색상을 초록색으로 설정
 		}
 		window.draw(text);
