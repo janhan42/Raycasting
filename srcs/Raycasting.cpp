@@ -1,4 +1,5 @@
 #include "Raycasting.hpp"
+#include "SFML/Graphics/Image.hpp"
 #include "SFML/System/Vector2.hpp"
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/Keyboard.hpp"
@@ -113,10 +114,18 @@ int main(void)
 	std::vector<Wall> walls;
 	sf::Text text;
 	sf::Font font;
-	font.loadFromFile("arial.ttf");
+	font.loadFromFile("srcs/font/arial.ttf");
 	text.setFont(font);
 	text.setCharacterSize(24); // 텍스트 크기 설정
 	text.setPosition(10, 10);
+	sf::Image icon;
+
+	if (!icon.loadFromFile("srcs/img/icon2.png"))
+	{
+		 std::cerr << "Failed to load icon file!" << std::endl;
+		return -1;
+	}
+	window.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
 	// setting window
 	while (window.isOpen()){
 		sf::Event event; // traking event

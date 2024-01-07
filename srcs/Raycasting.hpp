@@ -5,6 +5,7 @@
 # include "Wall.hpp"
 # include "Player.hpp"
 # include "Ray.hpp"
+# include <cmath>
 
 #define SCREEN_W 500
 #define SCREEN_H 500

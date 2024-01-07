@@ -1,5 +1,6 @@
 #include "Player.hpp"
 #include "SFML/Graphics/Color.hpp"
+#include "SFML/System/Vector2.hpp"
 #include <iostream>
 #include <valarray>
 
@@ -69,6 +70,18 @@ void Rectangle::update(float screenWidth, float screenHeight, float deltaTime, b
 		}
 	}
 	Velocity += accelation * deltaTime;
+
+	if (Velocity.x > 20) {
+		Velocity.x = 20;
+	} else if (Velocity.x < -20) {
+		Velocity.x = -20;
+	}
+
+	if (Velocity.y > 20) {
+		Velocity.y = 20;
+	} else if (Velocity.y < -20) {
+		Velocity.y = -20;
+	}
 
 	sf::Vector2f newPosition = body.getPosition() + Velocity * deltaTime;
 	sf::Vector2f size = body.getSize();
@@ -145,7 +158,7 @@ void	Rectangle::castRays(std::vector<Wall>& walls, sf::RenderWindow& window)
 {
 	sf::Vector2i mousePos = sf::Mouse::getPosition(window);
 	sf::Vector2f mouseWorldPos = window.mapPixelToCoords(mousePos); // 스크린 좌표를 월드 좌표로 변환
-	float rayLength = 500; // Ray 의 길이
+	float rayLength = 3000; // Ray 의 길이
 	// 마우스 위치를 향한 방향 벡터 계산
 	sf::Vector2f mouseDirection = mouseWorldPos - body.getPosition();
 	float length = std::sqrt(mouseDirection.x * mouseDirection.x + mouseDirection.y * mouseDirection.y);
